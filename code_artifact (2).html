@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 할 일</title>
+    <style>
+        /* CSS Reset 및 기본 변수 설정 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --text-color: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px 16px 40px;
+        }
+
+        /* 메인 컨테이너 */
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            padding: 24px;
+            margin-top: 20px;
+        }
+
+        /* 오늘 날짜 영역 */
+        .header-date {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-color);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* 진행도 (완료 개수 및 프로그레스 바) */
+        .progress-section {
+            margin-bottom: 24px;
+            background-color: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .progress-count {
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 10px;
+            background-color: #e5e7eb;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--primary-color);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        /* 입력 폼 */
+        .input-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .todo-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .todo-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-add {
+            padding: 12px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.2s;
+        }
+
+        .btn-add:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* 할 일 목록 */
+        .todo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            min-height: 50px;
+        }
+
+        /* 할 일 카드 */
+        .todo-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s;
+            word-break: break-all;
+        }
+
+        .todo-card:hover {
+            border-color: #d1d5db;
+        }
+
+        .todo-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            padding-right: 12px;
+        }
+
+        /* 커스텀 체크박스 */
+        .checkbox-btn {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: white;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .todo-card.completed .checkbox-btn {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .checkbox-btn::after {
+            content: "✓";
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .todo-card.completed .checkbox-btn::after {
+            display: block;
+        }
+
+        .todo-text {
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: color 0.2s;
+            line-height: 1.4;
+        }
+
+        .todo-card.completed .todo-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* 삭제 X 버튼 */
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            line-height: 1;
+            transition: color 0.2s, background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger-color);
+            background-color: #fee2e2;
+        }
+
+        /* 비어있을 때 메시지 */
+        .empty-message {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 30px 0;
+            font-size: 0.95rem;
+        }
+
+        /* 완료항목 삭제 버튼 */
+        .action-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .btn-clear {
+            background-color: transparent;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-clear:hover {
+            background-color: #f3f4f6;
+            color: var(--text-color);
+        }
+
+        /* 하단 안내 문구 */
+        .footer-notice {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 1. 오늘 날짜 -->
+        <div class="header-date" id="currentDate"></div>
+
+        <!-- 2. 완료 개수 & 막대 그래프 -->
+        <div class="progress-section">
+            <div class="progress-info">
+                <span>진행 상황</span>
+                <span class="progress-count" id="progressCount">0 / 0</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+            </div>
+        </div>
+
+        <!-- 3. 입력칸 및 추가 버튼 -->
+        <form class="input-form" id="todoForm">
+            <input type="text" class="todo-input" id="todoInput" placeholder="오늘 할 일을 입력하세요..." required autocomplete="off">
+            <button type="submit" class="btn-add">추가</button>
+        </form>
+
+        <!-- 4. 할 일 목록 카드가 세로로 쌓이는 영역 -->
+        <div class="todo-list" id="todoList"></div>
+
+        <!-- 5. 완료한 것 치우기 버튼 -->
+        <div class="action-section">
+            <button class="btn-clear" id="btnClearCompleted">완료한 것 치우기</button>
+        </div>
+
+        <!-- 6. 하단 데이터 안내 문구 -->
+        <div class="footer-notice">
+            이 목록은 지금 쓰는 브라우저에만 저장됩니다.
+        </div>
+    </div>
+
+    <script>
+        // 전역 상태 변수
+        let todos = [];
+
+        // DOM 요소 가져오기
+        const currentDateEl = document.getElementById('currentDate');
+        const progressCountEl = document.getElementById('progressCount');
+        const progressBarFillEl = document.getElementById('progressBarFill');
+        const todoForm = document.getElementById('todoForm');
+        const todoInput = document.getElementById('todoInput');
+        const todoListEl = document.getElementById('todoList');
+        const btnClearCompleted = document.getElementById('btnClearCompleted');
+
+        // 페이지 로드 시 초기화
+        window.addEventListener('DOMContentLoaded', () => {
+            renderDate();
+            loadTodos();
+            render();
+        });
+
+        // 1. 한국어 날짜 표시 함수
+        function renderDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            const dayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+            const dayName = dayNames[now.getDay()];
+
+            currentDateEl.textContent = `${year}년 ${month}월 ${date}일 ${dayName}`;
+        }
+
+        // 2. localStorage 데이터 불러오기
+        function loadTodos() {
+            const savedTodos = localStorage.getItem('my_daily_todos');
+            if (savedTodos) {
+                try {
+                    todos = JSON.parse(savedTodos);
+                } catch (e) {
+                    todos = [];
+                }
+            }
+        }
+
+        // 3. localStorage 데이터 저장하기
+        function saveTodos() {
+            localStorage.setItem('my_daily_todos', JSON.stringify(todos));
+        }
+
+        // 4. 화면 렌더링 (목록 + 프로그레스바)
+        function render() {
+            // 할 일 목록 비우기
+            todoListEl.innerHTML = '';
+
+            // 비어있는 상태 처리
+            if (todos.length === 0) {
+                todoListEl.innerHTML = '<div class="empty-message">오늘 할 일이 없습니다.<br>새로운 할 일을 입력해 보세요!</div>';
+            } else {
+                // 목록 카드 세로 추가
+                todos.forEach((todo) => {
+                    const card = document.createElement('div');
+                    card.className = `todo-card ${todo.completed ? 'completed' : ''}`;
+
+                    const leftDiv = document.createElement('div');
+                    leftDiv.className = 'todo-left';
+
+                    const checkbox = document.createElement('div');
+                    checkbox.className = 'checkbox-btn';
+                    checkbox.addEventListener('click', () => toggleTodo(todo.id));
+
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'todo-text';
+                    textSpan.textContent = todo.text;
+                    // 글자 터치 시에도 완료 토글 가능
+                    textSpan.addEventListener('click', () => toggleTodo(todo.id));
+
+                    leftDiv.appendChild(checkbox);
+                    leftDiv.appendChild(textSpan);
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn-delete';
+                    deleteBtn.innerHTML = '&times;';
+                    deleteBtn.setAttribute('title', '삭제');
+                    deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
+
+                    card.appendChild(leftDiv);
+                    card.appendChild(deleteBtn);
+
+                    todoListEl.appendChild(card);
+                });
+            }
+
+            // 진행도 계산 및 업데이트
+            updateProgress();
+        }
+
+        // 5. 진행 상황 (3 / 7 및 프로그레스 바) 업데이트
+        function updateProgress() {
+            const total = todos.length;
+            const completedCount = todos.filter(t => t.completed).length;
+
+            progressCountEl.textContent = `${completedCount} / ${total}`;
+
+            const percentage = total === 0 ? 0 : (completedCount / total) * 100;
+            progressBarFillEl.style.width = `${percentage}%`;
+        }
+
+        // 6. 할 일 추가
+        todoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = todoInput.value.trim();
+            if (!text) return;
+
+            const newTodo = {
+                id: Date.now(),
+                text: text,
+                completed: false
+            };
+
+            todos.push(newTodo);
+            saveTodos();
+            render();
+
+            todoInput.value = '';
+            todoInput.focus();
+        });
+
+        // 7. 완료 상태 토글 (완료/미완료)
+        function toggleTodo(id) {
+            todos = todos.map(todo => {
+                if (todo.id === id) {
+                    return { ...todo, completed: !todo.completed };
+                }
+                return todo;
+            });
+            saveTodos();
+            render();
+        }
+
+        // 8. 개별 항목 삭제
+        function deleteTodo(id) {
+            todos = todos.filter(todo => todo.id !== id);
+            saveTodos();
+            render();
+        }
+
+        // 9. 완료한 항목만 한 번에 정리하기
+        btnClearCompleted.addEventListener('click', () => {
+            const hasCompleted = todos.some(t => t.completed);
+            if (!hasCompleted) return;
+
+            todos = todos.filter(todo => !todo.completed);
+            saveTodos();
+            render();
+        });
+    </script>
+</body>
+</html>
