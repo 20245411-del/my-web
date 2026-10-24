@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나를 소개합니다</title>
+    <style>
+        /* 기본 리셋 및 글꼴 설정 (외부 폰트 미사용, 가독성 높은 시스템 폰트 적용) */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 무지개 그라데이션 배경 및 애니메이션 효과 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(
+                135deg, 
+                #ff9a9e, 
+                #fecfef, 
+                #feefd0, 
+                #a1c4fd, 
+                #c2e9fb, 
+                #d4fc79, 
+                #96e6a1
+            );
+            background-size: 300% 300%;
+            animation: rainbowBackground 12s ease infinite;
+            color: #2c3e50;
+            line-height: 1.6;
+            padding: 20px 16px 40px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* 무지개 배경이 부드럽게 움직이는 애니메이션 */
+        @keyframes rainbowBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 전체 레이아웃 컨테이너 (모바일에서 가로 스크롤 방지) */
+        .container {
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 헤더 영역 (화려한 배경 위에서도 잘 보이도록 반투명 흰색 적용) */
+        header {
+            text-align: center;
+            padding: 30px 10px 25px;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .nickname {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #2b3a4a; /* 시원하고 또렷한 텍스트 색상 */
+            margin-bottom: 8px;
+            word-break: keep-all;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: #4a5568;
+            font-weight: 600;
+            word-break: keep-all;
+        }
+
+        /* 카드 목록 영역 */
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* 카드 디자인 (반투명 스타일 적용) */
+        .card {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 22px 20px;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            user-select: none; /* 클릭 시 텍스트 드래그 방지 */
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 마우스 호버 및 반응 액션 */
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: #ffffff;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+        }
+
+        /* 카드 헤더 (제목 + 화살표 아이콘) */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* 내장 SVG 아이콘 색상 및 크기 */
+        .card-icon {
+            width: 28px;
+            height: 28px;
+            fill: #ff5252; /* 무지개 컨셉에 맞는 포인트 아이콘 색상 */
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #1a202c;
+        }
+
+        /* 펼치기/접기 화살표 아이콘 */
+        .arrow-icon {
+            width: 20px;
+            height: 20px;
+            fill: #718096;
+            transition: transform 0.3s ease, fill 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        /* 활성화 상태일 때 화살표 회전 */
+        .card.active .arrow-icon {
+            transform: rotate(180deg);
+            fill: #e53e3e;
+        }
+
+        /* 카드 펼침 내용 영역 */
+        .card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s cubic-bezier(0, 1, 0, 1), opacity 0.3s ease, margin-top 0.3s ease;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        .card.active .card-content {
+            max-height: 200px; /* 펼쳐질 충분한 높이 */
+            opacity: 1;
+            margin-top: 14px;
+            transition: max-height 0.35s cubic-bezier(1, 0, 1, 0), opacity 0.3s ease, margin-top 0.3s ease;
+        }
+
+        /* 세부 설명 텍스트 */
+        .description {
+            font-size: 1.1rem;
+            color: #2d3748;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 14px 16px;
+            border-radius: 12px;
+            border-left: 4px solid #ff6b6b;
+            word-break: keep-all;
+        }
+
+        /* 모바일 기기 맞춤 미디어 쿼리 */
+        @media (max-width: 480px) {
+            body {
+                padding: 12px 12px 30px;
+            }
+            .nickname {
+                font-size: 1.8rem;
+            }
+            .tagline {
+                font-size: 1.05rem;
+            }
+            .card-title {
+                font-size: 1.2rem;
+            }
+            .description {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 상단 헤더: 별명 및 한 줄 소개 -->
+        <header>
+            <h1 class="nickname">✨ 조윤재</h1>
+            <p class="tagline">살대로 사는 인간</p>
+        </header>
+
+        <!-- 카드 목록 -->
+        <main class="card-list">
+            
+            <!-- 카드 1: 좋아하는 것 -->
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <!-- 하트 아이콘 SVG -->
+                        <svg class="card-icon" viewBox="0 0 24 24">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <h2 class="card-title">좋아하는 것</h2>
+                    </div>
+                    <!-- 화살표 SVG -->
+                    <svg class="arrow-icon" viewBox="0 0 24 24">
+                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <p class="description">애니메이션 보기, 농구 시합하기, 친구들이랑 밥먹기!</p>
+                </div>
+            </div>
+
+            <!-- 카드 2: 요즘 관심사 -->
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <!-- 나침반 아이콘 SVG -->
+                        <svg class="card-icon" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14.5l-3.5-1 1-3.5 3.5 1-1 3.5zm2.5-6.5l-2.09 4.88-4.88 2.09 2.09-4.88L15.5 9z"/>
+                        </svg>
+                        <h2 class="card-title">요즘 관심사</h2>
+                    </div>
+                    <!-- 화살표 SVG -->
+                    <svg class="arrow-icon" viewBox="0 0 24 24">
+                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <p class="description">나 혼자만 레벨업, 중증외상센터, 전지적 독자시점 읽기!</p>
+                </div>
+            </div>
+
+            <!-- 카드 3: 올해 해 보고 싶은 것 -->
+            <div class="card" onclick="toggleCard(this)">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <!-- 별 아이콘 SVG -->
+                        <svg class="card-icon" viewBox="0 0 24 24">
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                        <h2 class="card-title">올해 해 보고 싶은 것</h2>
+                    </div>
+                    <!-- 화살표 SVG -->
+                    <svg class="arrow-icon" viewBox="0 0 24 24">
+                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/>
+                    </svg>
+                </div>
+                <div class="card-content">
+                    <p class="description">직접 만든 멋진 웹페이지를 사람들에게 공유하고, 제주도로 일주일 동안 혼자 여행 떠나기!</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 카드 클릭 시 펼침/접힘 동작 자바스크립트 -->
+    <script>
+        function toggleCard(cardElement) {
+            // 클릭된 카드의 active 클래스를 토글(추가/제거)합니다.
+            cardElement.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
